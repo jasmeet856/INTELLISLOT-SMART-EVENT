@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliSlot – Smart Event & Environment Notification System</title>
+  <meta name="description" content="IntelliSlot smart event, campus, corporate schedule and environment notification system with 14-day automated reminder alerts.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="nav-container">
+      <a href="#" class="brand">
+        <span>⚡ IntelliSlot</span>
+        <span class="brand-badge">Smart Alerts</span>
+      </a>
+
+      <div class="nav-actions">
+        <button class="btn btn-outline" id="btn-city-select" title="Change City">
+          📍 <span id="current-city-label">New Delhi</span>
+        </button>
+
+        <button class="btn-icon" id="btn-notifications" title="Notifications">
+          🔔
+          <span class="badge-count" id="notif-count" style="display: none;">0</span>
+        </button>
+
+        <button class="btn btn-outline" id="btn-settings" title="Settings & API Config">
+          ⚙️ Settings
+        </button>
+
+        <button class="btn btn-primary" id="btn-auth-action">
+          👤 <span id="auth-label">Sign In</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- Environment Weather & AQI Banner -->
+    <section class="env-banner">
+      <div class="env-info">
+        <div class="env-metric">
+          <span class="env-metric-label">Location</span>
+          <span class="env-metric-value" id="weather-city">New Delhi, IN</span>
+        </div>
+        <div class="env-metric">
+          <span class="env-metric-label">Temperature</span>
+          <span class="env-metric-value" id="weather-temp">--°C</span>
+        </div>
+        <div class="env-metric">
+          <span class="env-metric-label">Air Quality (AQI)</span>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem;">
+            <span class="aqi-pill aqi-moderate" id="aqi-badge">Loading...</span>
+            <span style="font-size: 0.85rem;" id="aqi-pm25">PM2.5: -- µg/m³</span>
+          </div>
+        </div>
+        <div class="env-metric">
+          <span class="env-metric-label">Humidity & Wind</span>
+          <span class="env-metric-value" style="font-size: 1rem;" id="weather-humidity">--% | -- km/h</span>
+        </div>
+      </div>
+
+      <div>
+        <button class="btn btn-outline" id="btn-refresh-weather" style="background: rgba(255,255,255,0.2); color:#fff; border-color: rgba(255,255,255,0.4)">
+          🔄 Refresh Weather
+        </button>
+      </div>
+    </section>
+
+    <!-- Browser Notification Permission Prompt (if not granted) -->
+    <div id="browser-notif-prompt" class="reminder-banner" style="display: none; background: #e0f2fe; border-left-color: #0284c7;">
+      <div>
+        <strong>🔔 Enable Browser Notifications:</strong> Get automated popup alerts on your desktop up to 14 days before campus events and corporate deadlines!
+      </div>
+      <button class="btn btn-primary" id="btn-request-permission" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+        Allow Notifications
+      </button>
+    </div>
+
+    <!-- 14-Day Upcoming Event Reminder Strip -->
+    <div class="reminder-banner">
+      <div>
+        <strong>⏰ 14-Day Automated Reminder Engine:</strong>
+        <span id="reminder-summary-text">Monitoring upcoming events within the next 2 weeks...</span>
+      </div>
+      <button class="btn btn-outline" id="btn-trigger-reminders" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+        ⚡ Check Upcoming Reminders Now
+      </button>
+    </div>
+
+    <!-- Dashboard Content Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Left Column: Events & Schedules -->
+      <section>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">📅 Event Management & Schedules</h2>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Campus sessions, corporate placements, exams & deadlines</p>
+            </div>
+            <button class="btn btn-primary" id="btn-open-add-event">
+              ➕ Add Event
+            </button>
+          </div>
+
+          <!-- Category Filter Bar -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <button class="btn btn-outline filter-btn active" data-filter="all">All</button>
+            <button class="btn btn-outline filter-btn" data-filter="campus">🏫 Campus</button>
+            <button class="btn btn-outline filter-btn" data-filter="corporate">💼 Corporate</button>
+            <button class="btn btn-outline filter-btn" data-filter="exam">📝 Exams</button>
+            <button class="btn btn-outline filter-btn" data-filter="personal">📌 Personal</button>
+          </div>
+
+          <!-- Event Items Container -->
+          <div id="events-container">
+            <p style="text-align: center; color: var(--text-muted); padding: 2rem 0;">Loading events...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Indian Festivals & National Holidays -->
+      <aside>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🇮🇳 Indian Festivals & Holidays</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">2026 Calendar</span>
+          </div>
+          <div id="holidays-container">
+            <p style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Loading festivals...</p>
+          </div>
+        </div>
+
+        <!-- Quick Summary Box -->
+        <div class="card" style="background: #f8fafc;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; font-weight: 700;">📊 System Status</h4>
+          <ul style="list-style: none; font-size: 0.825rem; display: flex; flex-direction: column; gap: 0.5rem; color: #475569;">
+            <li>✅ <strong>API Endpoint:</strong> <span id="status-api-url" style="word-break: break-all;">Configuring...</span></li>
+            <li>✅ <strong>14-Day Lookahead:</strong> Active</li>
+            <li>✅ <strong>Deduplication Guard:</strong> Enabled</li>
+            <li>✅ <strong>Live Weather/AQI:</strong> Open-Meteo Integration</li>
+          </ul>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Modal: Add / Edit Event -->
+  <div class="modal-overlay" id="modal-event">
+    <div class="modal-dialog">
+      <button class="modal-close" id="modal-event-close">&times;</button>
+      <h3 style="margin-bottom: 1rem;" id="modal-event-title">Add New Event</h3>
+
+      <form id="form-event">
+        <input type="hidden" id="event-id">
+
+        <div class="form-group">
+          <label class="form-label" for="event-title">Event Title *</label>
+          <input type="text" id="event-title" class="form-control" placeholder="e.g. Campus Placement Drive" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="event-category">Category</label>
+          <select id="event-category" class="form-control">
+            <option value="campus">Campus Schedule</option>
+            <option value="corporate">Corporate Event</option>
+            <option value="exam">Exam / Project Review</option>
+            <option value="personal">Personal / Slot</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label class="form-label" for="event-date">Date *</label>
+            <input type="date" id="event-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="event-time">Time</label>
+            <input type="time" id="event-time" class="form-control" value="09:00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="event-location">Location / Venue</label>
+          <input type="text" id="event-location" class="form-control" placeholder="e.g. Auditorium / Main Block">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="event-reminder-days">Automated Reminder (Days Before)</label>
+          <select id="event-reminder-days" class="form-control">
+            <option value="14">14 Days Before (2 Weeks)</option>
+            <option value="7" selected>7 Days Before (1 Week)</option>
+            <option value="3">3 Days Before</option>
+            <option value="1">1 Day Before</option>
+            <option value="0">On Event Day</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="event-description">Description / Notes</label>
+          <textarea id="event-description" class="form-control" rows="2" placeholder="Key notes, dress code, documents to carry..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline" id="btn-event-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-event-save">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Notifications Drawer -->
+  <div class="modal-overlay" id="modal-notif">
+    <div class="modal-dialog">
+      <button class="modal-close" id="modal-notif-close">&times;</button>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h3>🔔 Notifications & Reminders</h3>
+        <button class="btn btn-outline" id="btn-mark-all-read" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Mark All Read</button>
+      </div>
+
+      <div id="notif-list" style="max-height: 380px; overflow-y: auto;">
+        <p style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">No notifications yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings & Production API Config -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-dialog">
+      <button class="modal-close" id="modal-settings-close">&times;</button>
+      <h3 style="margin-bottom: 1rem;">⚙️ Settings & API Configuration</h3>
+
+      <div class="form-group">
+        <label class="form-label" for="input-api-url">Backend Production API Base URL</label>
+        <input type="text" id="input-api-url" class="form-control" placeholder="https://your-backend.onrender.com/api">
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+          Leave blank to use default. You can test with <code>http://localhost:5000/api</code> locally.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="select-user-city">Default Weather & AQI City</label>
+        <select id="select-user-city" class="form-control">
+          <option value="New Delhi">New Delhi</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Bengaluru">Bengaluru</option>
+          <option value="Chandigarh">Chandigarh</option>
+          <option value="Pune">Pune</option>
+          <option value="Hyderabad">Hyderabad</option>
+          <option value="Chennai">Chennai</option>
+          <option value="Kolkata">Kolkata</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+          <input type="checkbox" id="setting-browser-notifs" checked>
+          Enable Browser Push Notifications
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+          <input type="checkbox" id="setting-weather-alerts" checked>
+          Enable Weather & AQI Impact Alerts
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+          <input type="checkbox" id="setting-festival-alerts" checked>
+          Enable Indian Festival Countdown Alerts
+        </label>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-outline" id="btn-settings-close">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
